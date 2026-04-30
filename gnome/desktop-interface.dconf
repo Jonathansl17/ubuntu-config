@@ -1,0 +1,13 @@
+[/]
+clock-format='12h'
+clock-show-seconds=false
+clock-show-weekday=false
+color-scheme='prefer-dark'
+cursor-size=32
+enable-animations=false
+enable-hot-corners=false
+gtk-theme='Yaru-blue-dark'
+icon-theme='Yaru-blue-dark'
+show-battery-percentage=true
+text-scaling-factor=1.25
+toolkit-accessibility=false
