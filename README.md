@@ -58,10 +58,14 @@ chmod 600 ~/.bashrc.local
 ### Example contents
 
 ```sh
-export OPENAI_API_KEY="sk-..."
-export GITHUB_TOKEN="ghp_..."
-alias rdp-work='xfreerdp /v:10.0.0.5 /u:me /p:"$RDP_PASS"'
-export RDP_PASS='...'
+# API keys / tokens
+export ANTHROPIC_API_KEY="sk-ant-..."
+
+# Per-machine paths
+export JAVA_HOME="/usr/lib/jvm/java-21-openjdk"
+
+# Aliases that embed private hosts/users/passwords
+alias vpn-up='sudo openvpn --config ~/work.ovpn'
 ```
 
 ### Sanity check before pushing
