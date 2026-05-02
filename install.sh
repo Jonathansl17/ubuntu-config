@@ -11,7 +11,14 @@ yellow() { printf '\033[1;33m%s\033[0m\n' "$1"; }
 red()    { printf '\033[1;31m%s\033[0m\n' "$1"; }
 
 # ──────────────────────────────────────────────
-# 1. Bash
+# 1. Paquetes y aplicaciones
+# ──────────────────────────────────────────────
+green ">>> Instalando paquetes y aplicaciones"
+"$SCRIPT_DIR/packages/install-packages.sh"
+green "    Paquetes y aplicaciones instalados"
+
+# ──────────────────────────────────────────────
+# 2. Bash
 # ──────────────────────────────────────────────
 green ">>> Instalando .bashrc"
 if [ -f "$HOME/.bashrc" ]; then
@@ -22,7 +29,7 @@ cp "$SCRIPT_DIR/bash/.bashrc" "$HOME/.bashrc"
 green "    .bashrc instalado"
 
 # ──────────────────────────────────────────────
-# 2. Terminal (GNOME Terminal)
+# 3. Terminal (GNOME Terminal)
 # ──────────────────────────────────────────────
 if command -v dconf &>/dev/null; then
     green ">>> Cargando configuración de GNOME Terminal"
@@ -33,7 +40,7 @@ else
 fi
 
 # ──────────────────────────────────────────────
-# 3. Atajos de teclado (GNOME)
+# 4. Atajos de teclado (GNOME)
 # ──────────────────────────────────────────────
 if command -v dconf &>/dev/null; then
     green ">>> Cargando atajos de teclado"
@@ -45,7 +52,7 @@ else
 fi
 
 # ──────────────────────────────────────────────
-# 4. Entorno GNOME (interfaz, input, periféricos, shell, mutter)
+# 5. Entorno GNOME (interfaz, input, periféricos, shell, mutter)
 # ──────────────────────────────────────────────
 if command -v dconf &>/dev/null; then
     green ">>> Cargando configuración de entorno GNOME"

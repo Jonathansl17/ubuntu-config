@@ -1,0 +1,18 @@
+# snap-name	normal-install
+code	code
+docker	docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+postgresql	postgresql postgresql-client
+pgadmin4	pgadmin4-desktop
+brave	brave-browser
+brave-browser	brave-browser
+discord	discord
+dbeaver-ce	dbeaver-ce
+zoom-client	zoom
+postman	Postman tarball in /opt/Postman
+vlc	vlc
+copyq	copyq
+xournalpp	xournalpp
+obs-studio	obs-studio
+gh	gh
+node	nodejs
+nodejs	nodejs

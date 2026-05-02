@@ -1,8 +1,8 @@
 # ubuntu-config
 
 My personal Ubuntu (GNOME) setup: bash config, GNOME terminal profile,
-keybindings and desktop tweaks, plus a single `install.sh` that restores
-the whole thing on a fresh machine.
+keybindings, desktop tweaks, and app/package installation, plus a single
+`install.sh` that restores the whole thing on a fresh machine.
 
 Desktop is **GNOME on Wayland/X11** (Ubuntu default), terminal is
 **GNOME Terminal**. No window manager swap, no display manager change —
@@ -10,6 +10,17 @@ this repo just layers personal preferences on top of stock Ubuntu GNOME.
 
 ## What it installs
 
+- **Apps and packages** from `packages/`:
+  - APT/vendor repo installs: VS Code, Docker Engine + plugins,
+    PostgreSQL, pgAdmin 4 Desktop, Brave, DBeaver, VLC, CopyQ,
+    Xournal++, OBS Studio, GitHub CLI, and Node.js 22.
+  - Direct vendor installs: Discord `.deb`, Zoom `.deb`, and Postman
+    tarball in `/opt/Postman`.
+  - Snap replacements: if `snap` exists and one of these apps is installed
+    as a Snap, the script removes the Snap first and installs the normal
+    APT/`.deb`/tarball version instead.
+  - Intentionally excluded: RStudio, AnyDesk, Android Studio, and Brave
+    web apps such as WhatsApp.
 - **`bash/.bashrc`** copied to `~/.bashrc` (existing one backed up to
   `~/.bashrc.bak`). Adds custom aliases (`o` shutdown, `u` apt update),
   remaps `Ctrl+Z` to interrupt and disables suspend so `Ctrl+C` stays free
@@ -81,6 +92,10 @@ Expected output: nothing.
 ```
 ubuntu-config/
 ├── install.sh                      # restores bash + GNOME settings via dconf
+├── packages/
+│   ├── apt-packages.txt            # APT packages installed by the script
+│   ├── install-packages.sh         # app/package installer
+│   └── snap-replacements.tsv       # Snaps removed before normal installs
 ├── bash/
 │   └── .bashrc                     # custom aliases + sources ~/.bashrc.local
 ├── terminal/
