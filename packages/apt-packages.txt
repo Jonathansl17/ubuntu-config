@@ -6,6 +6,7 @@ copyq
 xournalpp
 obs-studio
 gh
+fastfetch
 
 # Vendor APT repositories configured by packages/install-packages.sh
 code
