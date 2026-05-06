@@ -8,6 +8,23 @@ Desktop is **GNOME on Wayland/X11** (Ubuntu default), terminal is
 **GNOME Terminal**. No window manager swap, no display manager change —
 this repo just layers personal preferences on top of stock Ubuntu GNOME.
 
+## What it does
+
+### Telemetry (step 1)
+
+`telemetry/disable-telemetry.sh` runs first and turns off:
+
+| Source | Action |
+|---|---|
+| `whoopsie` | `systemctl stop/disable` (Canonical crash reporter) |
+| `apport` | `systemctl stop/disable` + `enabled=0` in `/etc/default/apport` |
+| `ubuntu-report` | `ubuntu-report send no` |
+| `popularity-contest` | `PARTICIPATE=no` in `/etc/popularity-contest.conf` |
+| VS Code | `telemetry.telemetryLevel: "off"` in `~/.config/Code/User/settings.json` |
+| npm | `fund=false`, `update-notifier=false` |
+
+All steps are idempotent — if already disabled, the script skips silently. Missing services are reported in yellow and do not abort the install.
+
 ## What it installs
 
 - **Apps and packages** from `packages/`:
@@ -91,7 +108,9 @@ Expected output: nothing.
 
 ```
 ubuntu-config/
-├── install.sh                      # restores bash + GNOME settings via dconf
+├── install.sh                      # restores everything: telemetry → packages → bash → GNOME
+├── telemetry/
+│   └── disable-telemetry.sh        # disables Ubuntu/app telemetry (runs first)
 ├── packages/
 │   ├── apt-packages.txt            # APT packages installed by the script
 │   ├── install-packages.sh         # app/package installer
