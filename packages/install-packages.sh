@@ -27,6 +27,15 @@ arch() {
 install_prerequisites() {
     green ">>> Instalando prerequisitos de instalacion"
     sudo apt-get update
+
+    # Force-remove packages stuck in failed-config or half-installed state
+    local broken
+    broken=$(dpkg -l | awk '/^.[FH]/{print $2}')
+    if [ -n "$broken" ]; then
+        yellow "    Removiendo paquetes con estado roto: $broken"
+        echo "$broken" | xargs sudo dpkg --remove --force-depends
+    fi
+
     sudo apt-get install -f -y
     sudo apt-get install -y ca-certificates curl gpg tar unzip wget
 }
