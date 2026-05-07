@@ -27,6 +27,7 @@ arch() {
 install_prerequisites() {
     green ">>> Instalando prerequisitos de instalacion"
     sudo apt-get update
+    sudo apt-get install -f -y
     sudo apt-get install -y ca-certificates curl gpg tar unzip wget
 }
 
@@ -111,6 +112,7 @@ Architectures: $machine_arch
 Signed-By: /usr/share/keyrings/microsoft.gpg"
 
     # Docker — https://docs.docker.com/engine/install/ubuntu/
+    sudo rm -f /etc/apt/keyrings/docker.gpg /etc/apt/sources.list.d/docker.list
     fetch_key "https://download.docker.com/linux/ubuntu/gpg" "/etc/apt/keyrings/docker.asc"
     write_root_file "/etc/apt/sources.list.d/docker.sources" \
 "Types: deb
@@ -126,15 +128,15 @@ Signed-By: /etc/apt/keyrings/docker.asc"
 "deb [signed-by=/usr/share/keyrings/packages-pgadmin-org.gpg] https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$codename pgadmin4 main"
 
     # GitHub CLI — https://github.com/cli/cli/blob/trunk/docs/install_linux.md
-    wget -qO /tmp/githubcli-keyring.gpg https://cli.github.com/packages/githubcli-archive-keyring.gpg
-    sudo install -m 0644 /tmp/githubcli-keyring.gpg /etc/apt/keyrings/githubcli-archive-keyring.gpg
-    rm -f /tmp/githubcli-keyring.gpg
+    fetch_key "https://cli.github.com/packages/githubcli-archive-keyring.gpg" "/etc/apt/keyrings/githubcli-archive-keyring.gpg"
     write_root_file "/etc/apt/sources.list.d/github-cli.list" \
 "deb [arch=$machine_arch signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main"
 
     # Node.js 22 — https://github.com/nodesource/distributions
-    green ">>> Configurando repositorio NodeSource (Node.js 22)"
-    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+    if [ ! -f /etc/apt/sources.list.d/nodesource.list ]; then
+        green ">>> Configurando repositorio NodeSource (Node.js 22)"
+        curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+    fi
 }
 
 install_apt_packages() {
@@ -197,7 +199,7 @@ install_deb_from_url() {
     fi
 
     green "    Instalando $package desde .deb"
-    curl -fL "$url" -o "$output"
+    curl -fL --http1.1 "$url" -o "$output"
     sudo apt-get install -y "$output"
     rm -f "$output"
 }
