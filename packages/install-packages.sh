@@ -27,7 +27,7 @@ arch() {
 install_prerequisites() {
     green ">>> Instalando prerequisitos de instalacion"
     sudo apt-get update
-    sudo apt-get install -y ca-certificates curl gpg tar unzip
+    sudo apt-get install -y ca-certificates curl gpg tar unzip wget
 }
 
 dearmor_key() {
@@ -41,6 +41,19 @@ dearmor_key() {
     sudo install -d -m 0755 "$(dirname "$output")"
     curl -fsSL "$url" | sudo gpg --dearmor -o "$output"
     sudo chmod 0644 "$output"
+}
+
+fetch_key() {
+    local url="$1"
+    local output="$2"
+
+    if [ -s "$output" ]; then
+        return
+    fi
+
+    sudo install -d -m 0755 "$(dirname "$output")"
+    sudo curl -fsSL "$url" -o "$output"
+    sudo chmod a+r "$output"
 }
 
 write_root_file() {
@@ -87,6 +100,7 @@ configure_apt_repositories() {
 
     green ">>> Configurando repositorios APT oficiales/de proveedor"
 
+    # VS Code — https://code.visualstudio.com/docs/setup/linux
     dearmor_key "https://packages.microsoft.com/keys/microsoft.asc" "/usr/share/keyrings/microsoft.gpg"
     write_root_file "/etc/apt/sources.list.d/vscode.sources" \
 "Types: deb
@@ -96,25 +110,31 @@ Components: main
 Architectures: $machine_arch
 Signed-By: /usr/share/keyrings/microsoft.gpg"
 
-    dearmor_key "https://download.docker.com/linux/ubuntu/gpg" "/etc/apt/keyrings/docker.gpg"
-    write_root_file "/etc/apt/sources.list.d/docker.list" \
-"deb [arch=$machine_arch signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $codename stable"
+    # Docker — https://docs.docker.com/engine/install/ubuntu/
+    fetch_key "https://download.docker.com/linux/ubuntu/gpg" "/etc/apt/keyrings/docker.asc"
+    write_root_file "/etc/apt/sources.list.d/docker.sources" \
+"Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $codename
+Components: stable
+Architectures: $machine_arch
+Signed-By: /etc/apt/keyrings/docker.asc"
 
-    dearmor_key "https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg" "/etc/apt/keyrings/brave-browser-archive-keyring.gpg"
-    write_root_file "/etc/apt/sources.list.d/brave-browser-release.list" \
-"deb [signed-by=/etc/apt/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main"
-
-    dearmor_key "https://www.pgadmin.org/static/packages_pgadmin_org.pub" "/usr/share/keyrings/pgadmin-keyring.gpg"
+    # pgAdmin 4 — https://www.pgadmin.org/download/pgadmin-4-apt/
+    dearmor_key "https://www.pgadmin.org/static/packages_pgadmin_org.pub" "/usr/share/keyrings/packages-pgadmin-org.gpg"
     write_root_file "/etc/apt/sources.list.d/pgadmin4.list" \
-"deb [signed-by=/usr/share/keyrings/pgadmin-keyring.gpg] https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$codename pgadmin4 main"
+"deb [signed-by=/usr/share/keyrings/packages-pgadmin-org.gpg] https://ftp.postgresql.org/pub/pgadmin/pgadmin4/apt/$codename pgadmin4 main"
 
-    dearmor_key "https://dbeaver.io/debs/dbeaver.gpg.key" "/usr/share/keyrings/dbeaver.gpg"
-    write_root_file "/etc/apt/sources.list.d/dbeaver.list" \
-"deb [signed-by=/usr/share/keyrings/dbeaver.gpg] https://dbeaver.io/debs/dbeaver-ce /"
+    # GitHub CLI — https://github.com/cli/cli/blob/trunk/docs/install_linux.md
+    wget -qO /tmp/githubcli-keyring.gpg https://cli.github.com/packages/githubcli-archive-keyring.gpg
+    sudo install -m 0644 /tmp/githubcli-keyring.gpg /etc/apt/keyrings/githubcli-archive-keyring.gpg
+    rm -f /tmp/githubcli-keyring.gpg
+    write_root_file "/etc/apt/sources.list.d/github-cli.list" \
+"deb [arch=$machine_arch signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main"
 
-    dearmor_key "https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key" "/usr/share/keyrings/nodesource.gpg"
-    write_root_file "/etc/apt/sources.list.d/nodesource.list" \
-"deb [arch=$machine_arch signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main"
+    # Node.js 22 — https://github.com/nodesource/distributions
+    green ">>> Configurando repositorio NodeSource (Node.js 22)"
+    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 }
 
 install_apt_packages() {
@@ -132,6 +152,38 @@ install_apt_packages() {
     done < "$SCRIPT_DIR/apt-packages.txt"
 
     sudo apt-get install -y "${packages[@]}"
+}
+
+install_pnpm() {
+    if command -v pnpm >/dev/null 2>&1; then
+        green "    pnpm ya esta instalado"
+        return
+    fi
+
+    green ">>> Instalando pnpm"
+    curl -fsSL https://get.pnpm.io/install.sh | sh -
+}
+
+install_brave() {
+    if command -v brave-browser >/dev/null 2>&1; then
+        green "    Brave ya esta instalado"
+        return
+    fi
+
+    green ">>> Instalando Brave Browser"
+    curl -fsSL https://dl.brave.com/install.sh | sh
+}
+
+install_dbeaver() {
+    if dpkg-query -W -f='${Status}' dbeaver-ce 2>/dev/null | grep -q "install ok installed"; then
+        green "    DBeaver CE ya esta instalado"
+        return
+    fi
+
+    green ">>> Instalando DBeaver CE desde .deb oficial"
+    curl -fL "https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb" -o /tmp/dbeaver-ce.deb
+    sudo apt-get install -y /tmp/dbeaver-ce.deb
+    rm -f /tmp/dbeaver-ce.deb
 }
 
 install_deb_from_url() {
@@ -191,6 +243,9 @@ main() {
     remove_snap_replacements
     configure_apt_repositories
     install_apt_packages
+    install_brave
+    install_dbeaver
+    install_pnpm
     install_direct_debs
     install_postman
 }

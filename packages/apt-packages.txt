@@ -16,6 +16,4 @@ containerd.io
 docker-buildx-plugin
 docker-compose-plugin
 pgadmin4-desktop
-brave-browser
-dbeaver-ce
 nodejs
